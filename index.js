@@ -306,7 +306,7 @@ function smartInit(){
         'deliver',
         'init',
         '--username', cfg.apple_id,
-        '--use_live_version true',
+        '--use-live-version',
         '-a', tiapp.id
     ];
 
