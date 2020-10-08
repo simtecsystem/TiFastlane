@@ -639,7 +639,7 @@ exports.send = function(opts){
         }
         
         if(cfg.team_name != "null"){
-          initArgs.push('-e');
+          initArgs.push('--team_name');
           initArgs.push(cfg.team_name);
         }
 
