@@ -196,7 +196,7 @@ function uploadMetadata(){
     }
 
     var initArgs = [
-        'deliver'
+        'deliver',
     ];
 
     exec(fastlaneBinary, initArgs, { cwd: appDeliveryDir }, function(e){
@@ -306,7 +306,6 @@ function smartInit(){
         'deliver',
         'init',
         '--username', cfg.apple_id,
-        '--use-live-version',
         '-a', tiapp.id
     ];
 
