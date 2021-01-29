@@ -173,6 +173,18 @@ program.command('playsend')
     .action(playsend)
     ;
 
+/*
+@ Google Play Send Function
+*/
+program.command('playbuild')
+    .description('Build App for Google Play Store')
+    .option('-c, --config [value]', "Use another config file found in the root")
+    .option('--bump_build_version', 'Automatically bump Android build version')
+    .option('-a, --track [value]', 'The Track to upload the Application to: production, beta, alpha or rollout')
+    .option('-r, --rollout [value]', 'The percentage of the rollout')
+    .action(playbuild)
+    ;
+
 program.parse(process.argv);
 
 
@@ -341,6 +353,18 @@ function playsend(opts) {
 
     tifastlane.loadconfig(opts.config);
     tifastlane.playsend(options);
+};
+
+/*
+@ playsend
+*/
+function playbuild(opts) {
+    notifier.update && notifier.notify();
+
+    var options = _filterOptions(opts);
+
+    tifastlane.loadconfig(opts.config);
+    tifastlane.playbuild(options);
 };
 
 

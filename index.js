@@ -1261,6 +1261,107 @@ exports.playinit = function(opts){
 
 };
 
+exports.playbuild = function (opts) {
+    if(!fs.existsSync(cfgfile)){
+        console.log(chalk.red("==================================="));
+        console.log(chalk.red('Cannot find ', cfgfile));
+        console.log(chalk.yellow('You must run ') + chalk.cyan('tifast setup'));
+        console.log(chalk.red("==================================="));
+        console.log('\n ');
+        return
+    }
+
+    if(!cfg.google_keystore_file || !fs.existsSync(cfg.google_keystore_file)){
+        console.log(chalk.red("==================================="));
+        console.log(chalk.red('Unable to find Android Keystore file'));
+        console.log(chalk.yellow('Please run ') + chalk.cyan('tifast setup'));
+        console.log(chalk.red("==================================="));
+        console.log('\n ');
+        return
+    }
+
+    //Check the android args
+    if( cfg.android_build_args && cfg.android_build_args != "" ){
+        
+        var regex = new RegExp(/-p\b|-T\b|-O\b/);
+        
+        if( regex.test(cfg.android_build_args) ){
+            console.log("\n");
+            console.log(chalk.red("==================================="));
+            console.log(chalk.red(' ERROR ON YOUR ANDROID BUILD ARGS '));
+            console.log(chalk.red(' Starting TiFastlane v0.9 the "android_build_args" configuration changed how it behaves.'));
+            console.log(chalk.red(' Now you use it to append build args instead of replacing them'));
+            console.log(chalk.red(' You cannot use -p (platform), -T (target) or -O (output) when appending new args'));
+            console.log(chalk.red("==================================="));
+            console.log('\n ');
+            return;
+        }
+
+    }
+
+    console.log(chalk.cyan('Building for Google Play Store'));
+
+    /*
+    @ status app
+    */
+    localStatus({
+        type: 'Android'
+    });
+
+
+    console.log(chalk.yellow('First things first. Clean project to ensure build'));
+    console.log("\n");
+
+    if( opts.bump_build_version ){
+        // Bump version code
+        bumpBundleVersionAndroid();
+    }
+
+    var cleanArgs = [];
+
+    if(cfg.cli == "appc"){
+        cleanArgs.push('ti');
+    }
+
+    cleanArgs.push('clean');
+
+    exec(cfg.cli, cleanArgs, null, function(e){
+        console.log(chalk.cyan('Starting Appcelerator Build'));
+        console.log("\n");
+
+        // Delete APK from Dist folder
+        if(fs.existsSync("./dist/" + tiapp.name + ".apk")){
+            fs.unlinkSync("./dist/" + tiapp.name + ".apk");
+        }
+
+        var buildArgs = [cfg.cli == "appc"?'run':'build'];
+
+        buildArgs.push('-p', 'android', '-T', 'dist-playstore', '-O', './dist');
+
+        if( cfg.android_build_args && cfg.android_build_args != "" ){
+            buildArgs = buildArgs.concat(cliToArray(cfg.android_build_args));
+        }
+
+        buildArgs.push(
+            '-K', cfg.google_keystore_file,
+            '-P', cfg.google_keystore_password,
+            '-L', cfg.google_keystore_alias
+        );
+
+        if( cfg.android_app_id != "null" ){
+            manageAppID('android');
+        }
+
+        exec(cfg.cli, buildArgs, null, function(e){
+            if( cfg.android_app_id != "null" ){
+                manageAppID();
+            }
+
+            console.log(chalk.cyan('Finished build'));
+        });
+    });
+}
+
 /*
 @ export playsend function to CLI
 */
